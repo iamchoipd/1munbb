@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#2458ae"><title>이야기 속 수학 — 전자칠판 함께 풀기</title>
+<style>
+:root{font-family:system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#17304e;background:#eaf0fa;--accent:#2256a5;--edge:#d1dceb;--key-height:clamp(39px,6.5dvh,73px)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}button,select{font:inherit}button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:disabled{opacity:.4;cursor:default}[hidden]{display:none!important}
+.shell{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.header{flex:none;display:flex;justify-content:space-between;align-items:center;gap:10px;background:white;border-bottom:2px solid var(--edge);padding:7px 13px;min-height:54px}
+.brand{font-size:clamp(16px,1.6vw,25px);font-weight:900;white-space:nowrap}.controls{display:flex;gap:7px;align-items:center}.timer{border-radius:11px;background:#e7f0ff;padding:6px 15px;color:#154586;font-weight:900;font-variant-numeric:tabular-nums;font-size:clamp(20px,2.2vw,32px)}.timer.urgent{background:#ffebe8;color:#b2342f}.timer.finished{background:#eef0f4;color:#636a75}
+.topBtn{border:1px solid var(--edge);border-radius:10px;background:white;color:#233c62;padding:9px 12px;font-size:clamp(12px,1.15vw,16px);font-weight:800}
+.columns{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--num),minmax(0,1fr));gap:3px;padding:3px;background:#cad7e9}
+.station{min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:9px}
+.stationTop{flex:none;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:6px 8px;border-bottom:1px solid var(--edge);background:#eef4ff}.stationTop strong{font-size:clamp(14px,1.25vw,22px)}.correctCount{font-size:clamp(11px,1.05vw,18px);font-weight:850;color:#15539b;white-space:nowrap}.stationTop button{border:1px solid #bfd0e5;background:#fff;border-radius:8px;padding:5px 7px;font-size:clamp(10px,.9vw,14px)}
+.reading{min-height:0;flex:1;overflow-y:auto;padding:clamp(7px,.9vw,16px);overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px}.prompt{font-size:clamp(15px,1.7vw,27px);font-weight:750;line-height:1.46;word-break:keep-all;overflow-wrap:anywhere}.instruction{font-size:clamp(11px,.92vw,15px);color:#4b6790;font-weight:700}.inputs{display:flex;flex-direction:column;gap:7px;margin-top:auto}.inputLabel{font-size:clamp(11px,.95vw,16px);font-weight:800}.inputValue{border:2px solid #d1dbea;border-radius:9px;background:#f6f9fe;min-height:clamp(31px,4.25dvh,49px);padding:4px 6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:clamp(20px,2.3vw,38px);overflow-wrap:anywhere;word-break:break-all;text-align:center}.inputValue.active{border-color:#2463c0;background:#eaf3ff}.inputValue.locked{color:#9eafc1}.inputValue .unit{font-size:.6em;color:#617593;margin-left:5px}.feedback{min-height:1.3em;font-size:clamp(11px,1.05vw,17px);line-height:1.25;color:#22559a;font-weight:760}.feedback.bad{color:#b22b37}.feedback.good{color:#13804e}
+.dock{flex:none;background:#fff;border-top:2px solid #d5deee;padding:5px 7px calc(5px + env(safe-area-inset-bottom));box-shadow:0 -5px 13px #142c4c10}.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(3px,.35vw,6px)}.key{min-width:0;height:var(--key-height);background:#fff;border:1.5px solid #c4d1e5;border-radius:8px;font-size:clamp(18px,2vw,32px);color:#17365e;font-weight:850;box-shadow:0 1px 0 #d3dfef}.key:active:not(:disabled){background:#cde2ff}.key.op{background:#e3efff;color:#174d9a}.key.eq{background:#2458a9;color:white}.key.del{background:#fff0e6;color:#a34a21}.key.empty{visibility:hidden}
+.dockActions{display:flex;gap:5px;margin-top:5px}.check{flex:1;border:0;background:#2458a9;border-radius:9px;color:white;font-size:clamp(13px,1.16vw,19px);min-height:clamp(34px,4.3dvh,49px);font-weight:900}.skip{border:1px solid var(--edge);background:#f3f6fb;border-radius:9px;color:#51647b;font-size:clamp(10px,.85vw,14px);padding:0 9px;font-weight:800}
+.setup{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:18px;background:#edf3fc}.setupCard{width:min(540px,100%);background:white;border:1px solid var(--edge);border-radius:21px;padding:clamp(18px,3vw,30px);box-shadow:0 16px 50px #20345416}.setupCard h1{margin:0 0 8px;font-size:clamp(23px,3vw,31px)}.setupCard p{color:#53657d;line-height:1.5;margin:8px 0 20px}.setupLabel{font-weight:850;margin-bottom:10px}.choices{display:flex;gap:8px;margin:9px 0 23px}.choice{flex:1;min-width:0;background:#fff;border:2px solid #d3deeb;border-radius:11px;padding:12px 3px;font-weight:900;font-size:17px}.choice.sel{background:#2056ac;border-color:#2056ac;color:white}.start{width:100%;background:#2458ae;color:white;border:none;border-radius:12px;padding:14px;font-size:19px;font-weight:900}.expired{position:absolute;inset:0;z-index:5;background:#1729449c;display:flex;align-items:center;justify-content:center;padding:20px}.expiredBox{max-width:480px;width:100%;background:white;text-align:center;border-radius:20px;padding:30px}.expiredBox h2{margin:0 0 12px;font-size:30px}.expiredBox p{color:#526783;line-height:1.5}.expiredBox button{margin:7px;background:#2458ae;color:white;border:0;border-radius:10px;padding:12px 22px;font-weight:850}
+/* 5명이 한 화면을 공유할 때 문제보다 손이 닿는 키패드를 우선 */
+.columns[data-n="4"] .prompt,.columns[data-n="5"] .prompt{font-size:clamp(14px,1.35vw,23px);line-height:1.39}
+.columns[data-n="4"] .stationTop strong,.columns[data-n="5"] .stationTop strong{font-size:clamp(13px,1.2vw,19px)}
+.columns[data-n="5"] .reading{padding:7px}.columns[data-n="5"] .dock{padding:4px}.columns[data-n="5"] .keypad{gap:3px}
+@media(max-height:850px){:root{--key-height:clamp(31px,5.7dvh,53px)}.header{min-height:45px;padding:4px 8px}.reading{gap:5px}.inputs{gap:4px}.stationTop{padding:4px 6px}.inputValue{min-height:30px}.dockActions{margin-top:3px}}
+@media(max-height:620px){:root{--key-height:clamp(24px,5.1dvh,39px)}.header{min-height:38px}.prompt{font-size:clamp(12px,1.3vw,20px)}.inputValue{font-size:19px;min-height:27px}.feedback{font-size:11px}.dockActions .check{min-height:28px}.key{font-size:19px}}
+</style></head><body>
+<div class="shell"><header class="header"><div class="brand">이야기 속 수학 <span style="color:#61758e;font-size:.7em">전자칠판 · 함께 풀기</span></div><div class="controls"><div class="timer" id="timer" aria-live="off">02:00</div><button class="topBtn" id="pauseBtn">일시정지</button><button class="topBtn" id="fullBtn">⛶ 전체화면</button><button class="topBtn" id="setupBtn">다시 설정</button></div></header><main class="columns" id="columns"></main></div>
+<div class="setup" id="setup"><section class="setupCard"><h1>이야기 속 수학</h1><p>전자칠판을 세로로 나누어 최대 다섯 명이 <b>동시에</b> 풀어요. 각자 자기 칸의 키패드를 누르세요.</p><div class="setupLabel">함께 풀 인원</div><div class="choices" id="countChoices"></div><div class="setupLabel">제한시간</div><div class="choices" id="timeChoices"></div><button class="start" id="startBtn">모두 함께 시작</button></section></div>
+<div class="expired" id="expired" hidden><section class="expiredBox"><h2>시간이 끝났어요!</h2><p>모든 학생의 풀이가 종료되었습니다.<br>맞힌 문제 수는 다시 시작하면 초기화됩니다.</p><button id="restartBtn">같은 설정으로 다시 시작</button><button id="newSetupBtn">인원·시간 바꾸기</button></section></div>
+<script>
+
+
+
+
+'use strict';
+const typeNames=['받아올림 없는 덧셈','한 자리 뺄셈','받아내림 없는 두 자리 뺄셈','세 수의 뺄셈','받아올림 있는 덧셈','받아내림 있는 뺄셈'];
+const objects=[
+{item:'사과',unit:'개',place:'바구니에',add:'더 담았습니다',take:'꺼냈습니다'},
+{item:'귤',unit:'개',place:'상자에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'떡',unit:'개',place:'접시에',add:'더 놓았습니다',take:'먹었습니다'},
+{item:'과자',unit:'개',place:'그릇에',add:'더 담았습니다',take:'먹었습니다'},
+{item:'빵',unit:'개',place:'쟁반에',add:'더 놓았습니다',take:'팔았습니다'},
+{item:'사탕',unit:'개',place:'봉지에',add:'더 넣었습니다',take:'먹었습니다'},
+{item:'초콜릿',unit:'개',place:'상자에',add:'더 넣었습니다',take:'나누어 주었습니다'},
+{item:'토마토',unit:'개',place:'바구니에',add:'더 담았습니다',take:'꺼냈습니다'},
+{item:'감자',unit:'개',place:'창고에',add:'더 가져왔습니다',take:'꺼냈습니다'},
+{item:'양파',unit:'개',place:'창고에',add:'더 가져왔습니다',take:'나누어 주었습니다'},
+{item:'공',unit:'개',place:'체육관에',add:'더 가져왔습니다',take:'창고로 옮겼습니다'},
+{item:'풍선',unit:'개',place:'교실에',add:'더 가져왔습니다',take:'치웠습니다'},
+{item:'구슬',unit:'개',place:'상자에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'블록',unit:'개',place:'놀이방에',add:'더 가져왔습니다',take:'정리함에 넣었습니다'},
+{item:'주사위',unit:'개',place:'상자에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'도토리',unit:'개',place:'바구니에',add:'더 담았습니다',take:'꺼냈습니다'},
+{item:'솔방울',unit:'개',place:'상자에',add:'더 담았습니다',take:'꺼냈습니다'},
+{item:'연필',unit:'자루',place:'필통에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'색연필',unit:'자루',place:'상자에',add:'더 넣었습니다',take:'나누어 주었습니다'},
+{item:'붓',unit:'자루',place:'미술실에',add:'더 가져왔습니다',take:'꺼냈습니다'},
+{item:'지우개',unit:'개',place:'서랍에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'공책',unit:'권',place:'책장에',add:'더 꽂았습니다',take:'꺼냈습니다'},
+{item:'동화책',unit:'권',place:'책장에',add:'더 꽂았습니다',take:'빌려 주었습니다'},
+{item:'색종이',unit:'장',place:'서랍에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'도화지',unit:'장',place:'미술실에',add:'더 가져왔습니다',take:'나누어 주었습니다'},
+{item:'스티커',unit:'장',place:'상자에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'사진',unit:'장',place:'앨범에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'의자',unit:'개',place:'강당에',add:'더 가져왔습니다',take:'다른 방으로 옮겼습니다'},
+{item:'컵',unit:'개',place:'식탁에',add:'더 놓았습니다',take:'치웠습니다'},
+{item:'수건',unit:'장',place:'선반에',add:'더 놓았습니다',take:'꺼냈습니다'},
+{item:'비누',unit:'개',place:'창고에',add:'더 가져왔습니다',take:'꺼냈습니다'},
+{item:'우산',unit:'개',place:'우산꽂이에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'모자',unit:'개',place:'선반에',add:'더 놓았습니다',take:'꺼냈습니다'},
+{item:'장갑',unit:'켤레',place:'서랍에',add:'더 넣었습니다',take:'꺼냈습니다'},
+{item:'화분',unit:'개',place:'교실에',add:'더 가져왔습니다',take:'복도로 옮겼습니다'},
+{item:'꽃',unit:'송이',place:'꽃밭에',add:'더 피었습니다',take:'꺾었습니다'},
+{item:'해바라기',unit:'송이',place:'꽃밭에',add:'더 피었습니다',take:'꺾었습니다'},
+{item:'토끼',unit:'마리',place:'마당에',add:'더 왔습니다',take:'다른 곳으로 갔습니다'},
+{item:'강아지',unit:'마리',place:'마당에',add:'더 왔습니다',take:'집으로 돌아갔습니다'},
+{item:'고양이',unit:'마리',place:'마당에',add:'더 왔습니다',take:'다른 곳으로 갔습니다'},
+{item:'비둘기',unit:'마리',place:'공원에',add:'더 날아왔습니다',take:'날아갔습니다'},
+{item:'나비',unit:'마리',place:'꽃밭에',add:'더 날아왔습니다',take:'날아갔습니다'},
+{item:'참새',unit:'마리',place:'나무 위에',add:'더 날아왔습니다',take:'날아갔습니다'},
+{item:'오리',unit:'마리',place:'연못에',add:'더 왔습니다',take:'다른 곳으로 갔습니다'}
+];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){let j=rand(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+// 관형형 우리말 수사: '한 개', '스무 개', '스물한 개' 등
+function koreanNum(n){
+ const unit=['','한','두','세','네','다섯','여섯','일곱','여덟','아홉'];
+ const teen=['열','열한','열두','열세','열네','열다섯','열여섯','열일곱','열여덟','열아홉'];
+ const tens=['','','스물','서른','마흔','쉰','예순','일흔','여든','아흔'];
+ if(n===0)return '영';if(n<10)return unit[n];if(n<20)return teen[n-10];
+ const t=Math.floor(n/10),o=n%10;if(o===0)return n===20?'스무':tens[t];return tens[t]+unit[o];
+}
+function hasFinal(s){let c=s.charCodeAt(s.length-1);return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0}
+function particle(s,yes,no){return s+(hasFinal(s)?yes:no)}
+function subject(s){return particle(s,'이','가')}
+function topic(s){return particle(s,'은','는')}
+function counter(n,o){return koreanNum(n)+' '+o.unit}
+function withObj(n,o){return particle(counter(n,o),'을','를')}
+function withSub(n,o){return particle(counter(n,o),'이','가')}
+function finalQuestion(o){return topic(o.item)+' 모두 몇 '+o.unit+'일까요?'}
+function remaining(o){return '남은 '+topic(o.item)+' 몇 '+o.unit+'일까요?'}
+function createSentence(type,nums,o){
+ const [a,b,c]=nums;
+ const intro=`${o.place} ${subject(o.item)} ${counter(a,o)} 있었습니다.`;
+ const countQ=`지금 ${topic(o.item)} 모두 몇 ${o.unit}일까요?`;
+ const remainder=`${remaining(o)}`;
+ if(type===0||type===4){
+   const phrases=[
+    `${intro} ${withObj(b,o)} ${o.add}. ${countQ}`,
+    `${intro} 뒤이어 ${withObj(b,o)} ${o.add}. 이제 모두 몇 ${o.unit}일까요?`,
+    `${intro} ${withObj(b,o)} ${o.add}. 지금 몇 ${o.unit}이 있을까요?`
+   ];return pick(phrases);
+ }
+ if(type===3){
+   const phrases=[
+    `${intro} 먼저 ${withObj(b,o)} ${o.take}. 이어서 ${withObj(c,o)} ${o.take}. ${remainder}`,
+    `${intro} ${withObj(b,o)} ${o.take}. 또 ${withObj(c,o)} ${o.take}. 지금 몇 ${o.unit}이 남았을까요?`,
+    `${intro} 그중 ${withObj(b,o)} ${o.take}. 나중에 ${withObj(c,o)} ${o.take}. ${remainder}`
+   ];return pick(phrases);
+ }
+ const phrases=[
+  `${intro} 그중 ${withObj(b,o)} ${o.take}. ${remainder}`,
+  `${intro} ${withObj(b,o)} ${o.take}. 지금 몇 ${o.unit}이 남았을까요?`,
+  `${intro} ${withObj(b,o)} ${o.take}. ${o.place} ${subject(o.item)} 몇 ${o.unit} 남았을까요?`
+ ];return pick(phrases);
+}
+// 정해진 연산 조건을 충족하는 계산식만 뽑습니다.
+function operands(type){let a,b,c;
+ switch(type){
+ case 0:a=rand(1,8);b=rand(1,9-a);break;
+ case 1:a=rand(2,9);b=rand(1,a-1);break;
+ case 2:{let at=rand(2,9),bt=rand(1,at),ao=rand(0,9),bo=rand(0,ao);a=at*10+ao;b=bt*10+bo;if(a===b)return operands(type);break;}
+ case 3:a=rand(4,9);b=rand(1,a-2);c=rand(1,a-b-1);break;
+ case 4:a=rand(1,9);b=rand(Math.max(1,10-a),9);break;
+ case 5:a=rand(11,18);b=rand(a-9,9);break;
+ }
+ return type===3?[a,b,c]:[a,b];
+}
+function getFormula(type,nums){return nums.join(type===0||type===4?'+':'-')}
+function calculate(type,nums){return (type===0||type===4)?nums[0]+nums[1]:nums.reduce((a,b)=>a-b)}
+function validProblem(type,n){const [a,b,c]=n;let ans=calculate(type,n);if(ans<0||!Number.isInteger(ans))return false;switch(type){
+ case 0:return a>=1&&a<=9&&b>=1&&b<=9&&a+b<=9;
+ case 1:return a>=1&&a<=9&&b>=1&&b<=9&&a>=b;
+ case 2:return a>=10&&a<=99&&b>=10&&a>=b&&a%10>=b%10;
+ case 3:return n.length===3&&a<=9&&b<=9&&c<=9&&a-b>=0&&a-b-c>=0;
+ case 4:return a<=9&&b<=9&&a+b>=10;
+ case 5:return a>=11&&a<=19&&b>=1&&b<=9&&a%10<b;
+ default:return false;
+}}
+function nextType(p){if(p.bag.length===0)p.bag=shuffle([0,1,2,3,4,5]);return p.bag.pop()}
+function makeProblem(p){
+ p.asked++;
+ const due=p.review.findIndex(r=>r.at<=p.asked);
+ if(due>=0){const r=p.review.splice(due,1)[0];return generate(r.type,r.nums,p,true)}
+ const type=nextType(p);
+ for(let i=0;i<300;i++){
+ const nums=operands(type);if(!validProblem(type,nums))continue;
+ const f=getFormula(type,nums);
+ if(p.recentForms.includes(f))continue;
+ return generate(type,nums,p,false);
+ }
+ // 가능한 계산식이 부족할 때만 중복 조건을 완화합니다.
+ let nums;do{nums=operands(type)}while(!validProblem(type,nums));return generate(type,nums,p,false);
+}
+function generate(type,nums,p,isReview){
+ const f=getFormula(type,nums);
+ let pool=objects.filter(o=>!p.recentObjects.slice(-9).includes(o.item));if(!pool.length)pool=objects;
+ let o=pick(pool),q=createSentence(type,nums,o);
+ for(let i=0;i<15&&(p.recentQuestions.includes(q));i++){o=pick(pool);q=createSentence(type,nums,o)}
+ p.recentForms.push(f);if(p.recentForms.length>30)p.recentForms.shift();
+ p.recentObjects.push(o.item);if(p.recentObjects.length>15)p.recentObjects.shift();
+ p.recentQuestions.push(q);if(p.recentQuestions.length>30)p.recentQuestions.shift();
+ const problem={type,nums:[...nums],formula:f,result:calculate(type,nums),unit:o.unit,text:q,isReview};
+ if(!validProblem(type,nums)||problem.result!==calculate(type,nums))throw Error('출제 검증 오류');
+ return problem;
+}
+
+
+
+/* SIMULTANEOUS BOARD */
+'use strict';
+
+/* SIMULTANEOUS BOARD */
+'use strict';
+const $=s=>document.querySelector(s);
+const names=['가','나','다','라','마'];
+const order=['+','-','=','1','2','3','4','5','6','7','8','9','empty','0','del'];
+let count=3,minutes=2,stations=[],timeLeft=120,deadline=0,ticker=null,paused=false,finished=false;
+function makePlayer(i){return {name:names[i],bag:[],asked:0,review:[],recentForms:[],recentObjects:[],recentQuestions:[],correct:0,formulaSolved:false,problem:null,stage:'formula',formula:'',answer:'',errors:{formula:0,answer:0},feedback:'',feedbackStyle:'',endedWithEquals:false};}
+function fillChoices(el,nums,suffix,getter,setter){el.replaceChildren(...nums.map(n=>{const b=document.createElement('button');b.className='choice'+(getter()===n?' sel':'');b.textContent=n+suffix;b.type='button';b.addEventListener('click',()=>{setter(n);fillChoices(el,nums,suffix,getter,setter)});return b}))}
+fillChoices($('#countChoices'),[1,2,3,4,5],'명',()=>count,n=>count=n);
+fillChoices($('#timeChoices'),[1,2,3],'분',()=>minutes,n=>minutes=n);
+function start(){clearInterval(ticker);count=Number(count);stations=Array.from({length:count},(_,i)=>makePlayer(i));$('#columns').style.setProperty('--num',count);$('#columns').dataset.n=count;$('#columns').replaceChildren();for(let i=0;i<count;i++)buildStation(i);$('#setup').hidden=true;$('#expired').hidden=true;finished=false;paused=false;timeLeft=minutes*60;deadline=Date.now()+timeLeft*1000;$('#pauseBtn').textContent='일시정지';stations.forEach((p,i)=>nextProblem(p,i));updateTimer();ticker=setInterval(tick,200)}
+function updateTimer(){let sec=Math.max(0,Math.ceil(timeLeft));$('#timer').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('#timer').className='timer'+(sec<=20&&!finished?' urgent':'')+(finished?' finished':'')}
+function tick(){if(paused||finished)return;timeLeft=Math.max(0,(deadline-Date.now())/1000);updateTimer();if(timeLeft<=0)expire()}
+function expire(){if(finished)return;finished=true;clearInterval(ticker);timeLeft=0;updateTimer();$('#expired').hidden=false;stations.forEach((p,i)=>{p.feedback='시간이 끝났어요.';p.feedbackStyle='';render(i)})}
+function togglePause(){if(finished)return;if(paused){paused=false;deadline=Date.now()+timeLeft*1000;$('#pauseBtn').textContent='일시정지'}else{tick();paused=true;$('#pauseBtn').textContent='계속하기'}stations.forEach((p,i)=>render(i))}
+function buildStation(i){const panel=document.createElement('section');panel.className='station';panel.innerHTML=`<div class="stationTop"><strong>${names[i]} 학생</strong><span class="correctCount" data-correct>맞힌 문제 0개</span></div><div class="reading"><div class="instruction">문장을 읽고 식을 만들어 보세요.</div><div class="prompt" data-question></div><div class="inputs"><div><div class="inputLabel">① 식 만들기 (=까지 입력)</div><div class="inputValue active" data-formula>?</div></div><div><div class="inputLabel">② 답 입력하기</div><div class="inputValue locked" data-answer>?</div></div><div class="feedback" data-feedback role="status" aria-live="polite"></div></div></div><div class="dock"><div class="keypad"></div><div class="dockActions"><button class="skip" data-skip>건너뛰기</button><button class="check" data-check>식 확인</button></div></div>`;panel.querySelector('[data-skip]').addEventListener('click',()=>skip(i));panel.querySelector('[data-check]').addEventListener('click',()=>check(i));const pad=panel.querySelector('.keypad');for(const k of order){const b=document.createElement('button');b.type='button';b.className='key'+(['+','-'].includes(k)?' op':k==='='?' eq':k==='del'?' del':k==='empty'?' empty':'');b.textContent=k==='del'?'⌫':k==='-'?'−':k==='empty'?'':k;b.setAttribute('aria-label',k==='del'?'지우기':k);if(k!=='empty'){b.dataset.key=k;b.addEventListener('click',()=>put(i,k))}else b.disabled=true;pad.append(b)}$('#columns').append(panel);stations[i].el=panel}
+function nextProblem(p,i){p.stage='formula';p.formula='';p.answer='';p.errors={formula:0,answer:0};p.feedback='';p.feedbackStyle='';p.endedWithEquals=false;p.formulaSolved=false;p.problem=makeProblem(p);render(i);p.el.querySelector('.reading').scrollTop=0}
+function render(i){const p=stations[i],el=p.el;if(!el||!p.problem)return;el.querySelector('[data-correct]').textContent='맞힌 문제 '+p.correct+'개';el.querySelector('[data-question]').textContent=p.problem.text;el.querySelector('[data-formula]').textContent=p.formula.replace(/-/g,' − ').replace(/\+/g,' ＋ ')||'?';const a=el.querySelector('[data-answer]');a.replaceChildren(document.createTextNode(p.answer||'?'));if(p.stage!=='formula'){const u=document.createElement('span');u.className='unit';u.textContent=p.problem.unit;a.append(u)}el.querySelector('[data-formula]').className='inputValue '+(p.stage==='formula'?'active':'');a.className='inputValue '+(p.stage==='formula'?'locked':p.stage==='answer'?'active':'');const f=el.querySelector('[data-feedback]');f.textContent=p.feedback;f.className='feedback '+p.feedbackStyle;const c=el.querySelector('[data-check]');c.textContent=p.stage==='formula'?'식 확인':p.stage==='answer'?'정답 확인':'다음 문제';const locked=paused||finished;c.disabled=locked||(p.stage==='formula'?!p.endedWithEquals:p.stage==='answer'?!p.answer:false);el.querySelector('[data-skip]').disabled=locked;el.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.disabled=locked||p.stage==='reveal'||(p.stage==='answer'&&['+','-','='].includes(k))||(p.stage==='formula'&&p.endedWithEquals&&k!=='del')})}
+function put(i,k){const p=stations[i];if(finished||paused||p.stage==='reveal')return;if(k==='del'){if(p.stage==='formula'){p.formula=p.formula.slice(0,-1);p.endedWithEquals=false}else p.answer=p.answer.slice(0,-1)}else if(p.stage==='formula'){if(p.endedWithEquals||p.formula.length>=17)return;if(k==='='){if(p.formula&&!/[+\-]$/.test(p.formula)){p.formula+='=';p.endedWithEquals=true}}else if(k==='+'||k==='-'){if(p.formula&&!/[+\-]$/.test(p.formula))p.formula+=k}else if(/^\d$/.test(k)){const seg=p.formula.split(/[+\-]/).pop();if(seg.length>=2||seg==='0')return;p.formula+=k}}else if(/^\d$/.test(k)){if(p.answer.length>=3)return;p.answer=p.answer==='0'?k:p.answer+k}p.feedback='';p.feedbackStyle='';render(i)}
+function queueReview(p){const a=p.problem;if(p.review.some(x=>x.formula===a.formula))return;p.review.push({type:a.type,nums:[...a.nums],formula:a.formula,at:p.asked+5})}
+function check(i){const p=stations[i],a=p.problem;if(paused||finished)return;if(p.stage==='reveal'){nextProblem(p,i);return}if(p.stage==='formula'){if(!p.endedWithEquals)return;if(p.formula===a.formula+'='){p.stage='answer';p.formulaSolved=true;p.errors.formula=0;p.feedback='식이 맞아요! 답을 입력하세요.';p.feedbackStyle='good'}else if(p.errors.formula===0){p.errors.formula=1;p.feedback='오답이에요! 식이 틀렸어요. 지우기로 고쳐 보세요.';p.feedbackStyle='bad'}else{queueReview(p);p.stage='answer';p.feedback='오답이에요! 바른 식: '+(a.formula+'=').replace(/-/g,' − ').replace(/\+/g,' ＋ ')+'. 내 식은 그대로 두고 답을 구하세요.';p.feedbackStyle='bad'}}else if(p.stage==='answer'){if(p.answer!==''&&Number(p.answer)===a.result){if(p.formulaSolved)p.correct++;p.stage='reveal';p.feedback='정답이에요!';p.feedbackStyle='good'}else if(p.errors.answer===0){p.errors.answer=1;p.feedback='오답이에요! 답이 틀렸어요. 고쳐 보세요.';p.feedbackStyle='bad'}else{queueReview(p);p.stage='reveal';p.feedback='오답이에요! 정답은 '+a.result+a.unit+'입니다. 내 답은 그대로 남아요.';p.feedbackStyle='bad'}}render(i)}
+function skip(i){if(paused||finished)return;const p=stations[i];if(p.problem.isReview)queueReview(p);nextProblem(p,i)}
+$('#startBtn').addEventListener('click',start);$('#restartBtn').addEventListener('click',start);$('#pauseBtn').addEventListener('click',togglePause);$('#setupBtn').addEventListener('click',()=>{if(!$('#setup').hidden||confirm('현재 풀이를 끝내고 다시 설정할까요?')){clearInterval(ticker);paused=true;$('#expired').hidden=true;$('#setup').hidden=false}});$('#newSetupBtn').addEventListener('click',()=>{$('#expired').hidden=true;$('#setup').hidden=false});$('#fullBtn').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){}});document.addEventListener('fullscreenchange',()=>{$('#fullBtn').textContent=document.fullscreenElement?'⛶ 전체화면 종료':'⛶ 전체화면'});
+</script></body></html>
